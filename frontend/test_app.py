@@ -16,7 +16,7 @@ if "view" not in st.session_state:
 # Function to change views
 def change_view(view_name):
     st.session_state["view"] = view_name
-    st.experimental_rerun()
+   # st.experimental_rerun()
 
 # Registration view
 def registration_view():
@@ -47,7 +47,11 @@ def registration_view():
                     "updated_at": "NOW()"
                 }).execute()
                 st.success(f"User {email} registered successfully!")
-                st.button("Go to Login", on_click=lambda: change_view("login"))
+               # st.button("Go to Login", on_click=lambda: change_view("login"))
+
+                if st.button("Go to Login"):
+                    change_view("login")
+
             else:
                 st.error("Registration failed. Check your inputs.")
         except Exception as e:
@@ -83,7 +87,11 @@ def login_view():
             st.error("Login failed.")
             st.write(e)
 
-    st.button("Register New User", on_click=lambda: change_view("register"))
+    #st.button("Register New User", on_click=lambda: change_view("register"))
+
+     if st.button("Register New User"):
+        change_view("register")
+
 
 # Role-based dashboard view
 def dashboard_view():
@@ -101,7 +109,10 @@ def dashboard_view():
     elif user_role == "Social Worker":
         social_worker_dashboard()
 
-    st.button("Logout", on_click=lambda: st.session_state.clear() or change_view("login"))
+    #st.button("Logout", on_click=lambda: st.session_state.clear() or change_view("login"))
+    if st.button("Logout"):
+        change_view("login")
+
 
 # Admin-specific dashboard
 def admin_dashboard():
