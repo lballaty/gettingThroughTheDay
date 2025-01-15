@@ -16,12 +16,18 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 if "view" not in st.session_state:
     st.session_state["view"] = "login"  # Default view
 
-def is_valid_phone_with_country(phone_number, country_code):
+def is_valid_phone_with_country(phone_number, country_code_label):
+    """Validate phone number with country code."""
     try:
-        number = phonenumbers.parse(phone_number, country_code)
+        # Extract the numeric country code (e.g., "+351") from the dropdown selection
+        numeric_country_code = country_code_label.split(" ")[0]
+        number = phonenumbers.parse(phone_number, numeric_country_code)
         return phonenumbers.is_valid_number(number)
     except phonenumbers.NumberParseException:
+        logging.error(f"Phone validation failed for {phone_number} with country code {country_code_label}")
         return False
+
+
 
 # Function to change views
 def change_view(view_name):
@@ -92,7 +98,17 @@ def registration_view():
     last_name = st.text_input("Last Name (optional)")
 
     # Phone number input with validation
-    country_code = st.selectbox("Country Code", ["+1 (US)", "+44 (UK)", "+91 (India)", "+420 (Czech Republic)", "+351 (Portugal)", "+61 (Australia)"])
+    country_code = st.selectbox(
+        "Country Code",
+          [
+            "+1 (US)",
+            "+44 (UK)",
+            "+91 (India)",
+            "+420 (Czechia)",
+            "+351 (Portugal)",
+            "+61 (Australia)"
+        ]
+    )
     phone_number = st.text_input("Phone Number (optional)")
     if phone_number and not is_valid_phone_with_country(phone_number, country_code):
    
