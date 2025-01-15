@@ -155,6 +155,7 @@ def registration_view():
             auth_response = supabase.auth.sign_up({"email": email, "password": password})
             if "user" in auth_response:
                 user_id = auth_response["user"]["id"]
+                logging.info(f"User ID: {user_id}")
                 payload = {
                     "id": user_id,
                     "email": email,
@@ -174,9 +175,11 @@ def registration_view():
                     
             else:
                 st.error("Registration failed. Please verify your input.")
+                logging.error(f"Failed registration response: {auth_response}")
         except Exception as e:
             st.error(handle_supabase_error(e))
             st.info("If the issue persists, please contact support.")
+            logging.error(f"Exception during signup: {str(e)}")
 
 
 # Login view
