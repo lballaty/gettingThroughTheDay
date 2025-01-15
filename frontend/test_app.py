@@ -116,8 +116,8 @@ def registration_view():
                     "id": user_id,
                     "email": email,
                     "role": role,
-                    "first_name": first_name,
-                    "last_name": last_name,
+                    "first_name": first_name if first_name else None,
+                    "last_name": last_name if last_name else None,
                     "phone_number": f"{country_code} {phone_number}" if phone_number else None,
                 }).execute()
                 st.success(f"User {email} registered successfully!")
