@@ -154,7 +154,9 @@ def login_view():
     st.write("Don't have an account?")
     register_button = st.button("Register Now")
     if register_button:
-        change_view("register")
+        #change_view("register")
+        st.session_state["view"] = "register"
+
 
 
 
