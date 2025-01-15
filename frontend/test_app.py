@@ -88,7 +88,8 @@ def registration_view():
     country_code = st.selectbox("Country Code", ["+1 (US)", "+44 (UK)", "+91 (India)", "+420 (Czech Republic)", "+351 (Portugal)", "+61 (Australia)"])
     phone_number = st.text_input("Phone Number (optional)")
     if phone_number and not is_valid_phone(phone_number):
-    st.warning("Phone number should only contain digits and be 7-15 characters long.")
+   
+        st.warning("Phone number should only contain digits and be 7-15 characters long.")
 
 
     # Submit button
