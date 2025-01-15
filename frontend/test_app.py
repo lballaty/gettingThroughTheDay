@@ -32,7 +32,12 @@ def registration_view():
     if register_button:
         try:
             # Register user in Supabase
-            auth_response = supabase.auth.sign_up(email=email, password=password)
+            #auth_response = supabase.auth.sign_up(email=email, password=password)
+            auth_response = supabase.auth.sign_up({
+                "email": email,
+                "password": password
+            })
+
             if "user" in auth_response:
                 user_id = auth_response["user"]["id"]
                 # Add user profile to the `users` table
