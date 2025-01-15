@@ -13,6 +13,8 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 st.sidebar.title("Navigation")
 user_role = st.sidebar.radio("Select Role", ["Client", "Social Worker"])
 page = st.sidebar.radio("Go to", ["Tasks", "Calendar", "Feedback"])
+user_role = st.sidebar.radio("Select Role", ["Client", "Social Worker", "Admin"])
+
 
 # Client Interface
 if user_role == "Client":
