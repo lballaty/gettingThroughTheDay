@@ -37,17 +37,11 @@ def registration_view():
     # Role selection
     role = st.selectbox("Role", ["Client", "Social Worker", "Admin"])
 
-    # First name input with validation
+    # First name and last name inputs
     first_name = st.text_input("First Name (optional)")
-    if first_name and not first_name.isalpha():
-        st.warning("First name should contain only alphabetic characters.")
-
-    # Last name input with validation
     last_name = st.text_input("Last Name (optional)")
-    if last_name and not last_name.isalpha():
-        st.warning("Last name should contain only alphabetic characters.")
 
-    # Phone number input with country code
+    # Phone number input with validation
     country_code = st.selectbox("Country Code", ["+1 (US)", "+44 (UK)", "+91 (India)", "+420 (Czech Republic)", "+351 (Portugal)", "+61 (Australia)"])
     phone_number = st.text_input("Phone Number (optional)")
     phone_valid = re.match(r"^\d{7,15}$", phone_number) is not None if phone_number else True
@@ -57,7 +51,6 @@ def registration_view():
     # Submit button
     register_button = st.button("Register")
 
-    # Process registration only when the button is clicked
     if register_button:
         # Validate all inputs
         if not email_valid:
@@ -69,37 +62,15 @@ def registration_view():
         if len(password) < 8:
             st.error("Password must be at least 8 characters long.")
             return
-        if first_name and not first_name.isalpha():
-            st.error("First name should contain only alphabetic characters.")
-            return
-        if last_name and not last_name.isalpha():
-            st.error("Last name should contain only alphabetic characters.")
-            return
         if phone_number and not phone_valid:
             st.error("Invalid phone number format.")
             return
 
-        # Check if email is already registered
+        # Attempt to register the user
         try:
-            existing_user = supabase.table("users").select("*").eq("email", email).execute()
-            if existing_user.data:
-                st.error("This email is already registered.")
-                return
-        except Exception as e:
-            st.error("Error checking existing user.")
-            st.write(e)
-            return
-
-        # Attempt to register user
-        try:
-            auth_response = supabase.auth.sign_up({
-                "email": email,
-                "password": password
-            })
+            auth_response = supabase.auth.sign_up({"email": email, "password": password})
             if "user" in auth_response:
                 user_id = auth_response["user"]["id"]
-
-                # Add user profile to the `users` table
                 supabase.table("users").insert({
                     "id": user_id,
                     "email": email,
@@ -107,8 +78,6 @@ def registration_view():
                     "first_name": first_name,
                     "last_name": last_name,
                     "phone_number": f"{country_code} {phone_number}" if phone_number else None,
-                    "created_at": "NOW()",
-                    "updated_at": "NOW()"
                 }).execute()
                 st.success(f"User {email} registered successfully!")
                 if st.button("Go to Login"):
@@ -116,7 +85,12 @@ def registration_view():
             else:
                 st.error("Registration failed. Please verify your input.")
         except Exception as e:
-            st.error(f"An unexpected error occurred: {str(e)}")
+            error_message = str(e).lower()
+            if "already registered" in error_message:
+                st.error("This email is already registered. Try logging in.")
+            else:
+                st.error(f"An unexpected error occurred: {error_message}")
+
 
 # Login view
 def login_view():
@@ -128,7 +102,6 @@ def login_view():
     login_button = st.button("Login")
 
     if login_button:
-        # Check if fields are filled
         if not email:
             st.error("Email cannot be empty.")
             return
@@ -136,7 +109,6 @@ def login_view():
             st.error("Password cannot be empty.")
             return
 
-        # Attempt to authenticate
         try:
             # Correct method for signing in
             auth_response = supabase.auth.sign_in_with_password({
@@ -146,8 +118,6 @@ def login_view():
 
             if "user" in auth_response:
                 user_id = auth_response["user"]["id"]
-
-                # Fetch user details
                 user_data = supabase.table("users").select("*").eq("id", user_id).execute()
                 if user_data.data:
                     user_profile = user_data.data[0]
@@ -161,7 +131,9 @@ def login_view():
                 st.error("Invalid credentials. Please try again.")
         except Exception as e:
             error_message = str(e).lower()
-            if "email or password is invalid" in error_message:
+            if "email not confirmed" in error_message:
+                st.error("Your email is not confirmed. Please check your inbox.")
+            elif "email or password is invalid" in error_message:
                 st.error("Incorrect email or password. Please try again.")
             elif "invalid login credentials" in error_message:
                 st.error("Account does not exist. Please register below.")
@@ -170,6 +142,7 @@ def login_view():
             else:
                 st.error("An unexpected error occurred during login.")
                 st.write(f"Details: {error_message}")
+
 
 
 # Role-based dashboard view
