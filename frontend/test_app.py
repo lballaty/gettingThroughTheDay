@@ -29,17 +29,28 @@ def registration_view():
     if email and not email_valid:
         st.warning("Please enter a valid email address.")
 
-    # Password input with validation
+    # Password input with validation for length and complexity
     password = st.text_input("Password", type="password")
-    if password and len(password) < 8:
-        st.warning("Password must be at least 8 characters long.")
+    password_valid = (
+        len(password) >= 8 and
+        any(char.isdigit() for char in password) and
+        any(char.isalpha() for char in password) and
+        any(char in "!@#$%^&*()-_=+" for char in password)
+    )
+    if password and not password_valid:
+        st.warning("Password must be at least 8 characters long, include a mix of letters, numbers, and special characters.")
 
     # Role selection
     role = st.selectbox("Role", ["Client", "Social Worker", "Admin"])
 
     # First name and last name inputs
     first_name = st.text_input("First Name (optional)")
+    if first_name and not first_name.isalpha():
+        st.warning("First name should contain only alphabetic characters.")
+
     last_name = st.text_input("Last Name (optional)")
+    if last_name and not last_name.isalpha():
+        st.warning("Last name should contain only alphabetic characters.")
 
     # Phone number input with validation
     country_code = st.selectbox("Country Code", ["+1 (US)", "+44 (UK)", "+91 (India)", "+420 (Czech Republic)", "+351 (Portugal)", "+61 (Australia)"])
@@ -52,15 +63,12 @@ def registration_view():
     register_button = st.button("Register")
 
     if register_button:
-        # Validate all inputs
+        # Validate all required inputs
         if not email_valid:
             st.error("Invalid email address. Please correct it.")
             return
-        if not password:
-            st.error("Password cannot be empty.")
-            return
-        if len(password) < 8:
-            st.error("Password must be at least 8 characters long.")
+        if not password_valid:
+            st.error("Invalid password. Please ensure it meets the requirements.")
             return
         if phone_number and not phone_valid:
             st.error("Invalid phone number format.")
@@ -103,21 +111,18 @@ def login_view():
         st.warning("Please enter a valid email address.")
 
     password = st.text_input("Password", type="password")
-    if password and len(password) < 8:
-        st.warning("Password must be at least 8 characters long.")
-
     login_button = st.button("Login")
 
     if login_button:
         # Validate inputs
+        if not email:
+            st.error("Email cannot be empty.")
+            return
         if not email_valid:
-            st.error("Invalid email address. Please correct it.")
+            st.error("Invalid email address format. Please correct it.")
             return
         if not password:
             st.error("Password cannot be empty.")
-            return
-        if len(password) < 8:
-            st.error("Password must be at least 8 characters long.")
             return
 
         # Attempt to authenticate
@@ -150,7 +155,6 @@ def login_view():
                 st.error("Incorrect email or password.")
             elif "invalid login credentials" in error_message:
                 st.error("Account does not exist. Please register below.")
-                # Flash the register button message
                 st.markdown(
                     "<p style='color: red; font-weight: bold;'>Click the Register Now button below to create an account!</p>",
                     unsafe_allow_html=True,
@@ -164,8 +168,7 @@ def login_view():
     st.write("Don't have an account?")
     register_button = st.button("Register Now")
     if register_button:
-        st.session_state["view"] = "register"  # Navigate to registration view
-
+        change_view("register")
 
 
 
