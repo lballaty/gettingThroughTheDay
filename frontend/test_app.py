@@ -79,33 +79,43 @@ def registration_view():
             st.error("Invalid phone number format.")
             return
 
-        try:
-            # Register user in Supabase
-            auth_response = supabase.auth.sign_up({
-                "email": email,
-                "password": password
-            })
-            if "user" in auth_response:
-                user_id = auth_response["user"]["id"]
+try:
+    # Register user in Supabase
+    auth_response = supabase.auth.sign_up({
+        "email": email,
+        "password": password
+    })
 
-                # Add user profile to the `users` table
-                supabase.table("users").insert({
-                    "id": user_id,
-                    "email": email,
-                    "role": role,
-                    "first_name": first_name,
-                    "last_name": last_name,
-                    "phone_number": f"{country_code} {phone_number}" if phone_number else None,
-                    "created_at": "NOW()",
-                    "updated_at": "NOW()"
-                }).execute()
-                st.success(f"User {email} registered successfully!")
-                if st.button("Go to Login"):
-                    change_view("login")
-            else:
-                st.error("Registration failed. Please verify your input.")
-        except Exception as e:
-            st.error(f"Registration failed: {e}")
+    if "user" in auth_response:
+        user_id = auth_response["user"]["id"]
+
+        # Add user profile to the `users` table
+        supabase.table("users").insert({
+            "id": user_id,
+            "email": email,
+            "role": role,
+            "first_name": first_name,
+            "last_name": last_name,
+            "phone_number": f"{country_code} {phone_number}" if phone_number else None,
+            "created_at": "NOW()",
+            "updated_at": "NOW()"
+        }).execute()
+        st.success(f"User {email} registered successfully!")
+        if st.button("Go to Login"):
+            change_view("login")
+    else:
+        st.error("Registration failed. Please verify your input.")
+except Exception as e:
+    error_message = str(e)
+    if "already registered" in error_message.lower():
+        st.error("This email address is already registered.")
+    elif "invalid email" in error_message.lower():
+        st.error("Invalid email format. Please check your email address.")
+    elif "password" in error_message.lower():
+        st.error("Password error: Ensure your password meets the requirements.")
+    else:
+        st.error(f"An unexpected error occurred: {error_message}")
+
 
 # Login view
 def login_view():
