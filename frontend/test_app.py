@@ -137,43 +137,25 @@ def login_view():
             if "email not confirmed" in error_message:
                 st.error("Your email is not confirmed. Please check your inbox.")
             elif "email or password is invalid" in error_message:
-                st.error("Incorrect email or password. Please try again.")
+                st.error("Incorrect email or password.")
             elif "invalid login credentials" in error_message:
                 st.error("Account does not exist. Please register below.")
-                # Add a button to redirect to registration
-                if st.button("Register New Account"):
-                    change_view("register")
+                # Flash the register button message
+                st.markdown(
+                    "<p style='color: red; font-weight: bold;'>Click the Register Now button below to create an account!</p>",
+                    unsafe_allow_html=True,
+                )
             else:
                 st.error("An unexpected error occurred during login.")
                 st.write(f"Details: {error_message}")
 
-    # Add a "Register" button at the bottom of the login form
+    # Add a "Register Now" button at the bottom of the login form
     st.markdown("---")
     st.write("Don't have an account?")
-    if st.button("Register Now"):
+    register_button = st.button("Register Now")
+    if register_button:
         change_view("register")
 
-
-
-# Role-based dashboard view
-def dashboard_view():
-    user_role = st.session_state.get("user_role")
-    if not user_role:
-        st.warning("Unauthorized access. Please log in.")
-        change_view("login")
-        return
-
-    st.title(f"{user_role.capitalize()} Dashboard")
-    if user_role == "Admin":
-        admin_dashboard()
-    elif user_role == "Client":
-        client_dashboard()
-    elif user_role == "Social Worker":
-        social_worker_dashboard()
-
-    #st.button("Logout", on_click=lambda: st.session_state.clear() or change_view("login"))
-    if st.button("Logout"):
-        change_view("login")
 
 
 # Admin-specific dashboard
