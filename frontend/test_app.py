@@ -8,16 +8,49 @@ SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 # Initialize Supabase client
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-
 # Sidebar Navigation
 st.sidebar.title("Navigation")
 user_role = st.sidebar.radio("Select Role", ["Client", "Social Worker"])
 page = st.sidebar.radio("Go to", ["Tasks", "Calendar", "Feedback"])
 user_role = st.sidebar.radio("Select Role", ["Client", "Social Worker", "Admin"])
 
+#Admin Interface
+
+if user_role == "Admin":
+    st.header("Admin Dashboard")
+
+    if page == "Users":
+        st.subheader("User Management")
+        # Fetch and display all users
+        try:
+            users = supabase.table("users").select("*").execute()
+            if users.data:
+                for user in users.data:
+                    st.write(f"- **{user['email']}**: Role - {user['role']}")
+            else:
+                st.info("No users found.")
+        except Exception as e:
+            st.error("Error fetching users.")
+            st.write(e)
+
+    elif page == "Tasks":
+        st.subheader("Task Management")
+        # Fetch and display all tasks
+        try:
+            tasks = supabase.table("tasks").select("*").execute()
+            if tasks.data:
+                for task in tasks.data:
+                    st.write(f"- **{task['name']}**: Assigned to User ID - {task['user_id']}")
+            else:
+                st.info("No tasks found.")
+        except Exception as e:
+            st.error("Error fetching tasks.")
+            st.write(e)
+
+
 
 # Client Interface
-if user_role == "Client":
+elif user_role == "Client":
     if page == "Tasks":
         st.header("My Tasks")
         
