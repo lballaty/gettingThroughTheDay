@@ -1,4 +1,6 @@
 import streamlit as st
+import phonenumbers
+import logging
 import re  # Import for regex validation
 from supabase import create_client, Client
 
@@ -13,6 +15,13 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 # Initialize session state
 if "view" not in st.session_state:
     st.session_state["view"] = "login"  # Default view
+
+def is_valid_phone_with_country(phone_number, country_code):
+    try:
+        number = phonenumbers.parse(phone_number, country_code)
+        return phonenumbers.is_valid_number(number)
+    except phonenumbers.NumberParseException:
+        return False
 
 # Function to change views
 def change_view(view_name):
@@ -50,17 +59,15 @@ def is_valid_phone(phone_number):
 
 # Function to validate email
 def is_valid_email(email):
-    """Validate email format."""
-    return re.match(r"^[\w\.-]+@[\w\.-]+\.\w+$", email) is not None
+    if not re.match(r"^[\w\.-]+@[\w\.-]+\.\w+$", email):
+        return False, "Invalid email address format."
+    return True, ""
     
 # Function to validate passwords
 def is_valid_password(password):
-    return (
-        len(password) >= 8
-        and re.search(r"[A-Za-z]", password)
-        and re.search(r"\d", password)
-        and re.search(r"[!@#$%^&*(),.?\":{}|<>]", password)
-    )
+    if len(password) < 8 or not re.search(r"[A-Za-z]", password) or not re.search(r"\d", password):
+        return False, "Password must be at least 8 characters long, with a mix of letters and numbers."
+    return True, ""
 
 
 # Registration view
@@ -87,9 +94,10 @@ def registration_view():
     # Phone number input with validation
     country_code = st.selectbox("Country Code", ["+1 (US)", "+44 (UK)", "+91 (India)", "+420 (Czech Republic)", "+351 (Portugal)", "+61 (Australia)"])
     phone_number = st.text_input("Phone Number (optional)")
-    if phone_number and not is_valid_phone(phone_number):
+    if phone_number and not is_valid_phone_with_country(phone_number, country_code):
    
-        st.warning("Phone number should only contain digits and be 7-15 characters long.")
+        #st.warning("Phone number should only contain digits and be 7-15 characters long.")
+        st.warning("Invalid phone number. Please check the country code and number.")
 
 
     # Submit button
@@ -103,7 +111,7 @@ def registration_view():
         if not is_valid_password(password):
             st.error("Password must be at least 8 characters long, with a mix of letters and numbers.")
             return
-        if phone_number and not is_valid_phone(phone_number):  # << Add this check here
+        if phone_number and not is_valid_phone_with_country(phone_number, country_code):  # << Add this check here
             st.error("Invalid phone number format.")
             return
 
@@ -121,13 +129,13 @@ def registration_view():
                     "phone_number": f"{country_code} {phone_number}" if phone_number else None,
                 }).execute()
                 st.success(f"User {email} registered successfully!")
-                if st.button("Go to Login"):
                     change_view("login")
                     
             else:
                 st.error("Registration failed. Please verify your input.")
         except Exception as e:
             st.error(handle_supabase_error(e))
+            st.info("If the issue persists, please contact support.")
 
 
 # Login view
@@ -171,6 +179,7 @@ def login_view():
             else:
                 st.error("Invalid credentials. Please try again.")
         except Exception as e:
+            st.error(handle_supabase_error(e))
             error_message = str(e).lower()
             if "email not confirmed" in error_message:
                 st.error("Your email is not confirmed. Please check your inbox.")
