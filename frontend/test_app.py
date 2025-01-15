@@ -121,36 +121,50 @@ def registration_view():
 # Login view
 def login_view():
     st.title("Login")
+
+    # Input fields for email and password
     email = st.text_input("Email")
     password = st.text_input("Password", type="password")
     login_button = st.button("Login")
 
     if login_button:
+        # Check if fields are filled
+        if not email:
+            st.error("Email cannot be empty.")
+            return
+        if not password:
+            st.error("Password cannot be empty.")
+            return
+
+        # Attempt to authenticate
         try:
-            # Authenticate user in Supabase
             auth_response = supabase.auth.sign_in(email=email, password=password)
             if "user" in auth_response:
                 user_id = auth_response["user"]["id"]
+
+                # Fetch user details
                 user_data = supabase.table("users").select("*").eq("id", user_id).execute()
                 if user_data.data:
                     user_profile = user_data.data[0]
                     st.success(f"Welcome {user_profile['first_name']} ({user_profile['role']})")
-                    # Store user details in session state
                     st.session_state["user_role"] = user_profile["role"]
                     st.session_state["user_id"] = user_profile["id"]
                     change_view("dashboard")
                 else:
-                    st.error("User profile not found.")
+                    st.error("Account exists but profile not found. Please contact support.")
             else:
-                st.error("Invalid credentials.")
+                st.error("Invalid credentials. Please try again.")
         except Exception as e:
-            st.error("Login failed.")
-            st.write(e)
-
-    #st.button("Register New User", on_click=lambda: change_view("register"))
-
-if st.button("Register New User"):
-    change_view("register")
+            error_message = str(e).lower()
+            if "email or password is invalid" in error_message:
+                st.error("Incorrect email or password. Please try again.")
+            elif "invalid login credentials" in error_message:
+                st.error("Account does not exist. Please register below.")
+                if st.button("Register New Account"):
+                    change_view("register")
+            else:
+                st.error("An unexpected error occurred during login.")
+                st.write(f"Details: {error_message}")
 
 
 # Role-based dashboard view
