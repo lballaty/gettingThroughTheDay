@@ -111,6 +111,8 @@ def registration_view():
 
     # Role selection
     role = st.selectbox("Role", ["Client", "Social Worker", "Admin"])
+    logging.info(f"Role value being selected for sending to Supabase: {role}")
+
 
     # First name and last name inputs
     first_name = st.text_input("First Name (optional)")
@@ -167,9 +169,13 @@ def registration_view():
 
              # Debugging the payload
                 debug_payload(payload, display_on_screen=True)
+                logging.info(f"Supabase payload: {payload}")
+
+
 
                 
                 supabase.table("users").insert(payload).execute()
+                logging.info(f"Supabase response: {response}")
                 st.success(f"User {email} registered successfully!")
                 change_view("login")
                     
