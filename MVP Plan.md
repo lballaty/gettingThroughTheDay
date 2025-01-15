@@ -2,7 +2,7 @@
 
 **Project Name:** gettingThroughTheDay  
 **Date:** [Insert Date]  
-**Version:** Draft 1.0
+**Version:** Draft 1.1
 
 ---
 
@@ -97,8 +97,31 @@
 
 ---
 
+### 5. Project Structure
 
-### 5. Timeline
+#### **Folder Structure**
+```
+gettingThroughTheDay/
+|
+|-- backend/               # Backend code and migrations
+|   |-- migrations/        # SQL migration files
+|   |-- supabase/          # Supabase configuration
+|
+|-- frontend/              # Streamlit app
+|   |-- pages/             # Pages for different views (Client, Social Worker)
+|   |-- components/        # Reusable components (Forms, Tables, etc.)
+|
+|-- docs/                  # Documentation
+|   |-- schema_design.md   # Database schema details
+|   |-- user_flows.md      # Detailed user flows
+|
+|-- .gitignore             # Git ignore file
+|-- README.md              # Project overview and setup instructions
+```
+
+---
+
+### 6. Timeline
 
 **Week 1**:
 - Finalize core features and scope.
@@ -111,10 +134,13 @@
 **Week 3**:
 - Develop Social Worker Interface for feedback.
 - Test client and social worker flows.
+   - Add edit and delete functionality for tasks.
+   - Develop basic user authentication system.
 
 **Week 4**:
 - Conduct internal testing.
 - Deploy POC on Streamlit Cloud for stakeholder feedback.
+- Document user feedback and prepare for future iterations.
 
 ---
 
