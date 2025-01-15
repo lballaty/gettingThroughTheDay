@@ -8,6 +8,41 @@ SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 # Initialize Supabase client
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
+
+# Registration form
+st.title("User Registration")
+email = st.text_input("Email")
+password = st.text_input("Password", type="password")
+role = st.selectbox("Role", ["Client", "Social Worker", "Admin"])
+first_name = st.text_input("First Name (optional)")
+last_name = st.text_input("Last Name (optional)")
+phone_number = st.text_input("Phone Number (optional)")
+register_button = st.button("Register")
+
+if register_button:
+    try:
+        # Create user authentication record in Supabase
+        auth_response = supabase.auth.sign_up(email=email, password=password)
+        if "user" in auth_response:
+            user_id = auth_response["user"]["id"]
+            # Add user profile to `users` table
+            supabase.table("users").insert({
+                "id": user_id,
+                "email": email,
+                "role": role,
+                "first_name": first_name,
+                "last_name": last_name,
+                "phone_number": phone_number,
+                "created_at": "NOW()",
+                "updated_at": "NOW()"
+            }).execute()
+            st.success(f"User {email} registered successfully!")
+        else:
+            st.error("Registration failed. Check your inputs.")
+    except Exception as e:
+        st.error("Registration failed.")
+        st.write(e)
+
 # Sidebar Navigation
 st.sidebar.title("Navigation")
 page = st.sidebar.radio("Go to", ["Tasks", "Calendar", "Feedback"])
