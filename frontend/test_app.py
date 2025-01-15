@@ -98,16 +98,26 @@ def login_view():
 
     # Input fields for email and password
     email = st.text_input("Email")
+    email_valid = re.match(r"^[\w\.-]+@[\w\.-]+\.\w+$", email) is not None
+    if email and not email_valid:
+        st.warning("Please enter a valid email address.")
+
     password = st.text_input("Password", type="password")
+    if password and len(password) < 8:
+        st.warning("Password must be at least 8 characters long.")
+
     login_button = st.button("Login")
 
     if login_button:
         # Validate inputs
-        if not email:
-            st.error("Email cannot be empty.")
+        if not email_valid:
+            st.error("Invalid email address. Please correct it.")
             return
         if not password:
             st.error("Password cannot be empty.")
+            return
+        if len(password) < 8:
+            st.error("Password must be at least 8 characters long.")
             return
 
         # Attempt to authenticate
@@ -154,8 +164,8 @@ def login_view():
     st.write("Don't have an account?")
     register_button = st.button("Register Now")
     if register_button:
-        #change_view("register")
-        st.session_state["view"] = "register"
+        st.session_state["view"] = "register"  # Navigate to registration view
+
 
 
 
