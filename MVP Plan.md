@@ -1,4 +1,3 @@
-
 **POC/MVP Design Document**
 
 **Project Name:** gettingThroughTheDay  
@@ -76,18 +75,23 @@
 ### 4. Technical Requirements
 
 1. **Frontend:**
-   - Framework: React or Flutter for simplicity and responsiveness.
-   - Basic forms and list components for POC.
+   - Framework: Streamlit for rapid prototyping and simplicity.
+   - Use forms for task creation, categorization, and feedback submission.
+   - Display task lists and calendar views using libraries like `streamlit-aggrid`.
 
 2. **Backend:**
    - Supabase for database and authentication.
    - Basic schema for users, tasks, categories, and feedback.
 
 3. **Deployment:**
-   - Frontend: Hosted on Vercel or Netlify.
+   - Frontend: Hosted on Streamlit Cloud.
    - Backend: Supabase free tier.
 
-4. **Security:**
+4. **Code Repository:**
+   - Use GitHub for version control and collaboration.
+   - Ensure clear folder structures and commit messages for better management.
+
+5. **Security:**
    - User authentication via Supabase.
    - Basic role-based access controls.
 
@@ -100,8 +104,8 @@
 - Set up Supabase backend.
 
 **Week 2**:
-- Develop Client Interface for task management.
-- Integrate backend with frontend.
+- Develop Client Interface for task management using Streamlit.
+- Integrate backend with Streamlit frontend.
 
 **Week 3**:
 - Develop Social Worker Interface for feedback.
@@ -109,7 +113,7 @@
 
 **Week 4**:
 - Conduct internal testing.
-- Deploy POC for stakeholder feedback.
+- Deploy POC on Streamlit Cloud for stakeholder feedback.
 
 ---
 
