@@ -1,4 +1,5 @@
 import streamlit as st
+import re  # Import for regex validation
 from supabase import create_client, Client
 
 # Supabase configuration
@@ -21,25 +22,72 @@ def change_view(view_name):
 # Registration view
 def registration_view():
     st.title("User Registration")
+
+    # Email input with real-time validation
     email = st.text_input("Email")
+    email_valid = re.match(r"^[\w\.-]+@[\w\.-]+\.\w+$", email) is not None
+    if email and not email_valid:
+        st.warning("Please enter a valid email address.")
+
+    # Password input with validation
     password = st.text_input("Password", type="password")
+    if password and len(password) < 8:
+        st.warning("Password must be at least 8 characters long.")
+
+    # Role selection
     role = st.selectbox("Role", ["Client", "Social Worker", "Admin"])
+
+    # First name input with validation
     first_name = st.text_input("First Name (optional)")
+    if first_name and not first_name.isalpha():
+        st.warning("First name should contain only alphabetic characters.")
+
+    # Last name input with validation
     last_name = st.text_input("Last Name (optional)")
+    if last_name and not last_name.isalpha():
+        st.warning("Last name should contain only alphabetic characters.")
+
+    # Phone number input with country code
+    country_code = st.selectbox("Country Code", ["+1 (US)", "+44 (UK)", "+91 (India)", "+420 (Czech Republic)", "+351 (Portugal)", "+61 (Australia)"])
     phone_number = st.text_input("Phone Number (optional)")
+    phone_valid = re.match(r"^\d{7,15}$", phone_number) is not None if phone_number else True
+    if phone_number and not phone_valid:
+        st.warning("Phone number should only contain digits and be 7-15 characters long.")
+
+    # Submit button
     register_button = st.button("Register")
 
+    # On form submission
     if register_button:
+        # Validate all inputs
+        if not email_valid:
+            st.error("Invalid email address. Please correct it.")
+            return
+        if not password:
+            st.error("Password cannot be empty.")
+            return
+        if len(password) < 8:
+            st.error("Password must be at least 8 characters long.")
+            return
+        if first_name and not first_name.isalpha():
+            st.error("First name should contain only alphabetic characters.")
+            return
+        if last_name and not last_name.isalpha():
+            st.error("Last name should contain only alphabetic characters.")
+            return
+        if phone_number and not phone_valid:
+            st.error("Invalid phone number format.")
+            return
+
         try:
             # Register user in Supabase
-            #auth_response = supabase.auth.sign_up(email=email, password=password)
             auth_response = supabase.auth.sign_up({
                 "email": email,
                 "password": password
             })
-
             if "user" in auth_response:
                 user_id = auth_response["user"]["id"]
+
                 # Add user profile to the `users` table
                 supabase.table("users").insert({
                     "id": user_id,
@@ -47,21 +95,17 @@ def registration_view():
                     "role": role,
                     "first_name": first_name,
                     "last_name": last_name,
-                    "phone_number": phone_number,
+                    "phone_number": f"{country_code} {phone_number}" if phone_number else None,
                     "created_at": "NOW()",
                     "updated_at": "NOW()"
                 }).execute()
                 st.success(f"User {email} registered successfully!")
-               # st.button("Go to Login", on_click=lambda: change_view("login"))
-
                 if st.button("Go to Login"):
                     change_view("login")
-
             else:
-                st.error("Registration failed. Check your inputs.")
+                st.error("Registration failed. Please verify your input.")
         except Exception as e:
-            st.error("Registration failed.")
-            st.write(e)
+            st.error(f"Registration failed: {e}")
 
 # Login view
 def login_view():
