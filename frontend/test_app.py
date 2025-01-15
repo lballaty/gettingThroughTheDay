@@ -4,6 +4,9 @@ import logging
 import re  # Import for regex validation
 from supabase import create_client, Client
 
+# Enable logging 
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+
 # Supabase configuration
 SUPABASE_URL = "https://gnyvvmvazbjvhnzhvetv.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdueXZ2bXZhemJqdmhuemh2ZXR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY5MzIwOTcsImV4cCI6MjA1MjUwODA5N30.NSx6aI1v8ou6Sv-qKCtjwsl7FmtG6e1ztIb1bBDPBvE"
@@ -15,6 +18,22 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 # Initialize session state
 if "view" not in st.session_state:
     st.session_state["view"] = "login"  # Default view
+    
+# Payload Logging/Viewing function
+def debug_payload(payload, display_on_screen=False):
+    """
+    Logs and optionally displays the payload being sent to Supabase for troubleshooting.
+
+    Args:
+        payload (dict): The data payload to be logged.
+        display_on_screen (bool): Whether to display the payload on the Streamlit screen.
+    """
+    logging.info(f"Payload to Supabase: {payload}")
+    
+    if display_on_screen:
+        st.write("**Debug: Payload being sent to Supabase:**")
+        st.json(payload)  # Nicely formatted JSON display in Streamlit
+
 
 def is_valid_phone_with_country(phone_number, country_code_label):
     """Validate phone number with country code."""
@@ -136,14 +155,20 @@ def registration_view():
             auth_response = supabase.auth.sign_up({"email": email, "password": password})
             if "user" in auth_response:
                 user_id = auth_response["user"]["id"]
-                supabase.table("users").insert({
+                payload = {
                     "id": user_id,
                     "email": email,
                     "role": role,
                     "first_name": first_name if first_name else None,
                     "last_name": last_name if last_name else None,
                     "phone_number": f"{country_code} {phone_number}" if phone_number else None,
-                }).execute()
+                }
+
+             # Debugging the payload
+                debug_payload(payload, display_on_screen=True)
+
+                
+                supabase.table("users").insert(payload).execute()
                 st.success(f"User {email} registered successfully!")
                 change_view("login")
                     
