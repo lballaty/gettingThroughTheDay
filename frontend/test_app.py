@@ -19,6 +19,35 @@ def change_view(view_name):
     """Change the current view."""
     st.session_state["view"] = view_name
 
+# Function to handle Supabase related errors and give user friendly feedback
+def handle_supabase_error(exception):
+  
+    error_message = str(exception).lower()
+    
+    if "already registered" in error_message:
+        return "This email is already registered. Please log in instead."
+    elif "email or password is invalid" in error_message:
+        return "Incorrect email or password. Please try again."
+    elif "invalid login credentials" in error_message:
+        return "Account does not exist. Please register."
+    elif "email not confirmed" in error_message:
+        return "Your email is not confirmed. Please check your inbox."
+    elif "invalid email" in error_message:
+        return "Invalid email format. Please check your input."
+    elif "password" in error_message:
+        return "Password does not meet the requirements. Please ensure it is at least 8 characters long."
+    elif "constraint" in error_message:
+        return "There was a database constraint error. Please check your input or contact support."
+    else:
+        return f"An unexpected error occurred: {exception}"
+
+# Function to validate phone number
+def is_valid_phone(phone_number):
+    """Validate phone number format: 7-15 digits."""
+    if not phone_number:
+        return True  # Optional field; valid if empty
+    return re.match(r"^\d{7,15}$", phone_number) is not None
+
 # Function to validate email
 def is_valid_email(email):
     """Validate email format."""
@@ -26,8 +55,13 @@ def is_valid_email(email):
     
 # Function to validate passwords
 def is_valid_password(password):
-    """Validate password strength."""
-    return len(password) >= 8 and any(char.isdigit() for char in password) and any(char.isalpha() for char in password)
+    return (
+        len(password) >= 8
+        and re.search(r"[A-Za-z]", password)
+        and re.search(r"\d", password)
+        and re.search(r"[!@#$%^&*(),.?\":{}|<>]", password)
+    )
+
 
 # Registration view
 def registration_view():
@@ -53,9 +87,9 @@ def registration_view():
     # Phone number input with validation
     country_code = st.selectbox("Country Code", ["+1 (US)", "+44 (UK)", "+91 (India)", "+420 (Czech Republic)", "+351 (Portugal)", "+61 (Australia)"])
     phone_number = st.text_input("Phone Number (optional)")
-    phone_valid = re.match(r"^\d{7,15}$", phone_number) is not None if phone_number else True
-    if phone_number and not phone_valid:
-        st.warning("Phone number should only contain digits and be 7-15 characters long.")
+    if phone_number and not is_valid_phone(phone_number):
+    st.warning("Phone number should only contain digits and be 7-15 characters long.")
+
 
     # Submit button
     register_button = st.button("Register")
@@ -68,7 +102,7 @@ def registration_view():
         if not is_valid_password(password):
             st.error("Password must be at least 8 characters long, with a mix of letters and numbers.")
             return
-        if phone_number and not phone_valid:
+        if phone_number and not is_valid_phone(phone_number):  # << Add this check here
             st.error("Invalid phone number format.")
             return
 
@@ -88,14 +122,11 @@ def registration_view():
                 st.success(f"User {email} registered successfully!")
                 if st.button("Go to Login"):
                     change_view("login")
+                    
             else:
                 st.error("Registration failed. Please verify your input.")
         except Exception as e:
-            error_message = str(e).lower()
-            if "already registered" in error_message:
-                st.error("This email is already registered. Try logging in.")
-            else:
-                st.error(f"An unexpected error occurred: {error_message}")
+            st.error(handle_supabase_error(e))
 
 
 # Login view
