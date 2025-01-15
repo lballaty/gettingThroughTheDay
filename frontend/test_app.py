@@ -138,7 +138,12 @@ def login_view():
 
         # Attempt to authenticate
         try:
-            auth_response = supabase.auth.sign_in(email=email, password=password)
+            # Correct method for signing in
+            auth_response = supabase.auth.sign_in_with_password({
+                "email": email,
+                "password": password
+            })
+
             if "user" in auth_response:
                 user_id = auth_response["user"]["id"]
 
