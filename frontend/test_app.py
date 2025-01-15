@@ -102,6 +102,7 @@ def login_view():
     login_button = st.button("Login")
 
     if login_button:
+        # Validate inputs
         if not email:
             st.error("Email cannot be empty.")
             return
@@ -109,8 +110,8 @@ def login_view():
             st.error("Password cannot be empty.")
             return
 
+        # Attempt to authenticate
         try:
-            # Correct method for signing in
             auth_response = supabase.auth.sign_in_with_password({
                 "email": email,
                 "password": password
@@ -118,6 +119,8 @@ def login_view():
 
             if "user" in auth_response:
                 user_id = auth_response["user"]["id"]
+
+                # Fetch user details
                 user_data = supabase.table("users").select("*").eq("id", user_id).execute()
                 if user_data.data:
                     user_profile = user_data.data[0]
@@ -137,11 +140,18 @@ def login_view():
                 st.error("Incorrect email or password. Please try again.")
             elif "invalid login credentials" in error_message:
                 st.error("Account does not exist. Please register below.")
+                # Add a button to redirect to registration
                 if st.button("Register New Account"):
                     change_view("register")
             else:
                 st.error("An unexpected error occurred during login.")
                 st.write(f"Details: {error_message}")
+
+    # Add a "Register" button at the bottom of the login form
+    st.markdown("---")
+    st.write("Don't have an account?")
+    if st.button("Register Now"):
+        change_view("register")
 
 
 
