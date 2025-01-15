@@ -129,7 +129,7 @@ def registration_view():
                     "phone_number": f"{country_code} {phone_number}" if phone_number else None,
                 }).execute()
                 st.success(f"User {email} registered successfully!")
-                    change_view("login")
+                change_view("login")
                     
             else:
                 st.error("Registration failed. Please verify your input.")
