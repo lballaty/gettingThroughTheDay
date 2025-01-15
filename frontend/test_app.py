@@ -16,8 +16,8 @@ if "view" not in st.session_state:
 
 # Function to change views
 def change_view(view_name):
+    """Change the current view."""
     st.session_state["view"] = view_name
-   # st.experimental_rerun()
 
 # Registration view
 def registration_view():
@@ -79,14 +79,23 @@ def registration_view():
             st.error("Invalid phone number format.")
             return
 
+        # Check if email is already registered
+        try:
+            existing_user = supabase.table("users").select("*").eq("email", email).execute()
+            if existing_user.data:
+                st.error("This email is already registered.")
+                return
+        except Exception as e:
+            st.error("Error checking existing user.")
+            st.write(e)
+            return
+
         # Attempt to register user
         try:
-            # Register user in Supabase
             auth_response = supabase.auth.sign_up({
                 "email": email,
                 "password": password
             })
-
             if "user" in auth_response:
                 user_id = auth_response["user"]["id"]
 
@@ -107,16 +116,7 @@ def registration_view():
             else:
                 st.error("Registration failed. Please verify your input.")
         except Exception as e:
-            error_message = str(e)
-            if "already registered" in error_message.lower():
-                st.error("This email address is already registered.")
-            elif "invalid email" in error_message.lower():
-                st.error("Invalid email format. Please check your email address.")
-            elif "password" in error_message.lower():
-                st.error("Password error: Ensure your password meets the requirements.")
-            else:
-                st.error(f"An unexpected error occurred: {error_message}")
-
+            st.error(f"An unexpected error occurred: {str(e)}")
 
 # Login view
 def login_view():
