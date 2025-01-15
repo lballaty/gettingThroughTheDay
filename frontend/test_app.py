@@ -19,38 +19,36 @@ def change_view(view_name):
     """Change the current view."""
     st.session_state["view"] = view_name
 
+# Function to validate email
+def is_valid_email(email):
+    """Validate email format."""
+    return re.match(r"^[\w\.-]+@[\w\.-]+\.\w+$", email) is not None
+    
+# Function to validate passwords
+def is_valid_password(password):
+    """Validate password strength."""
+    return len(password) >= 8 and any(char.isdigit() for char in password) and any(char.isalpha() for char in password)
+
 # Registration view
 def registration_view():
     st.title("User Registration")
 
     # Email input with real-time validation
     email = st.text_input("Email")
-    email_valid = re.match(r"^[\w\.-]+@[\w\.-]+\.\w+$", email) is not None
-    if email and not email_valid:
+    if email and not is_valid_email(email):
         st.warning("Please enter a valid email address.")
 
-    # Password input with validation for length and complexity
+    # Password input with validation
     password = st.text_input("Password", type="password")
-    password_valid = (
-        len(password) >= 8 and
-        any(char.isdigit() for char in password) and
-        any(char.isalpha() for char in password) and
-        any(char in "!@#$%^&*()-_=+" for char in password)
-    )
-    if password and not password_valid:
-        st.warning("Password must be at least 8 characters long, include a mix of letters, numbers, and special characters.")
+    if password and not is_valid_password(password):
+        st.warning("Password must be at least 8 characters long, with a mix of letters and numbers.")
 
     # Role selection
     role = st.selectbox("Role", ["Client", "Social Worker", "Admin"])
 
     # First name and last name inputs
     first_name = st.text_input("First Name (optional)")
-    if first_name and not first_name.isalpha():
-        st.warning("First name should contain only alphabetic characters.")
-
     last_name = st.text_input("Last Name (optional)")
-    if last_name and not last_name.isalpha():
-        st.warning("Last name should contain only alphabetic characters.")
 
     # Phone number input with validation
     country_code = st.selectbox("Country Code", ["+1 (US)", "+44 (UK)", "+91 (India)", "+420 (Czech Republic)", "+351 (Portugal)", "+61 (Australia)"])
@@ -63,12 +61,12 @@ def registration_view():
     register_button = st.button("Register")
 
     if register_button:
-        # Validate all required inputs
-        if not email_valid:
+        # Validate all inputs
+        if not is_valid_email(email):
             st.error("Invalid email address. Please correct it.")
             return
-        if not password_valid:
-            st.error("Invalid password. Please ensure it meets the requirements.")
+        if not is_valid_password(password):
+            st.error("Password must be at least 8 characters long, with a mix of letters and numbers.")
             return
         if phone_number and not phone_valid:
             st.error("Invalid phone number format.")
@@ -104,21 +102,14 @@ def registration_view():
 def login_view():
     st.title("Login")
 
-    # Input fields for email and password
+    # Input fields
     email = st.text_input("Email")
-    email_valid = re.match(r"^[\w\.-]+@[\w\.-]+\.\w+$", email) is not None
-    if email and not email_valid:
-        st.warning("Please enter a valid email address.")
-
     password = st.text_input("Password", type="password")
     login_button = st.button("Login")
 
     if login_button:
         # Validate inputs
-        if not email:
-            st.error("Email cannot be empty.")
-            return
-        if not email_valid:
+        if not is_valid_email(email):
             st.error("Invalid email address format. Please correct it.")
             return
         if not password:
@@ -154,7 +145,7 @@ def login_view():
             elif "email or password is invalid" in error_message:
                 st.error("Incorrect email or password.")
             elif "invalid login credentials" in error_message:
-                st.error("Account does not exist. Please register below.")
+                st.error("This account does not exist. Please register below.")
                 st.markdown(
                     "<p style='color: red; font-weight: bold;'>Click the Register Now button below to create an account!</p>",
                     unsafe_allow_html=True,
