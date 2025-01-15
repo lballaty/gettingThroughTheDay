@@ -89,8 +89,8 @@ def login_view():
 
     #st.button("Register New User", on_click=lambda: change_view("register"))
 
-     if st.button("Register New User"):
-        change_view("register")
+if st.button("Register New User"):
+    change_view("register")
 
 
 # Role-based dashboard view
